@@ -1,9 +1,12 @@
 package com.example.appledoux.ui.login;
 
+import androidx.annotation.RequiresApi;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import android.content.Context;
+import android.os.Build;
 import android.util.Patterns;
 
 import com.example.appledoux.data.LoginRepository;
@@ -30,9 +33,10 @@ public class LoginViewModel extends ViewModel {
         return loginResult;
     }
 
-    public void login(String username) {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public void login(String username, Context context) {
         // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(username);
+        Result<LoggedInUser> result = loginRepository.login(username,context);
 
         if (result instanceof Result.Success) {
             LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();

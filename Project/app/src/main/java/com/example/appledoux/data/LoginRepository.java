@@ -1,5 +1,10 @@
 package com.example.appledoux.data;
 
+import android.content.Context;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.example.appledoux.data.model.LoggedInUser;
 
 /**
@@ -43,9 +48,10 @@ public class LoginRepository {
         // @see https://developer.android.com/training/articles/keystore
     }
 
-    public Result<LoggedInUser> login(String username) {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public Result<LoggedInUser> login(String username, Context context) {
         // handle login
-        Result<LoggedInUser> result = dataSource.login(username);
+        Result<LoggedInUser> result = dataSource.login(username,context);
         if (result instanceof Result.Success) {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
         }
