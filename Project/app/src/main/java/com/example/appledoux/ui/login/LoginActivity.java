@@ -42,6 +42,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import com.androidnetworking.*;
@@ -54,7 +55,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 public class LoginActivity extends AppCompatActivity {
-
+    private static final String key64 = "cPTm5/B51wxWTGtyF0z+PA==";
     private LoginViewModel loginViewModel;
     private static final int VERSION_BDD = 1;
     private static final String NOM_BDD = "app.db3";
@@ -106,7 +107,9 @@ public class LoginActivity extends AppCompatActivity {
                         {
                             throw new Exception();
                         }
-                        affichage();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            affichage();
+                        }
                     } catch (Exception e) {
 
                     }
@@ -137,6 +140,7 @@ public class LoginActivity extends AppCompatActivity {
             });
 
             loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public void onChanged(@Nullable LoginResult loginResult) {
                     if (loginResult == null) {
@@ -217,10 +221,11 @@ public class LoginActivity extends AppCompatActivity {
 
     public void updateAPI()
     {
-        //TODO:do it
+
         AndroidNetworking.get("https://60102f166c21e10017050128.mockapi.io/labbbank/accounts/")
                 .build()
                 .getAsJSONArray(new JSONArrayRequestListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onResponse(JSONArray response) {
                         // do anything with response
@@ -232,10 +237,10 @@ public class LoginActivity extends AppCompatActivity {
                                 if (obj.getString("id").equals(Iduser))
                                 {
                                     ContentValues values = new ContentValues();
-                                    values.put(COL_ACCNAME,obj.getString("accountName"));
+                                    values.put(COL_ACCNAME, Base64.getEncoder().encodeToString(obj.getString("accountName").getBytes()));
                                     values.put(COL_AMOUNT,obj.getInt("amount"));
-                                    values.put(COL_IBAN,obj.getString("iban"));
-                                    values.put(COL_CURREN,obj.getString("currency"));
+                                    values.put(COL_IBAN,Base64.getEncoder().encodeToString(obj.getString("iban").getBytes()));
+                                    values.put(COL_CURREN,Base64.getEncoder().encodeToString(obj.getString("currency").getBytes()));
                                     if (bdd.insert(TABLE_BANK,null,values)==-1)
                                     {
                                         return;
@@ -255,6 +260,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
 
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void updateListView()
     {
         final TextView view = findViewById(R.id.Listaffichage);
@@ -273,20 +279,21 @@ public class LoginActivity extends AppCompatActivity {
                 int index;
 
                 index = c.getColumnIndexOrThrow(COL_ACCNAME);
-                String account_name = c.getString(index);
+                String account_name = new String(Base64.getDecoder().decode(c.getString(index)));
 
                 index = c.getColumnIndexOrThrow(COL_AMOUNT);
                 int amount = c.getInt(index);
 
                 index = c.getColumnIndexOrThrow(COL_IBAN);
-                String iban = c.getString(index);
+                String iban = new String(Base64.getDecoder().decode(c.getString(index)));
                 index = c.getColumnIndexOrThrow(COL_CURREN);
-                String currency = c.getString(index);
+                String currency = new String(Base64.getDecoder().decode(c.getString(index)));
                 retour += account_name+ " (IBAN: " + iban + "): \r\n" + amount + " " + currency + "\r\n";
             }
             view.setText(retour);
         }
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void affichage()
     {
         setContentView(R.layout.affichage);
@@ -308,29 +315,5 @@ public class LoginActivity extends AppCompatActivity {
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
         finish();
-    }
-    private class StableArrayAdapter extends ArrayAdapter<String> {
-
-        HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
-
-        public StableArrayAdapter(Context context, int textViewResourceId,
-                                  List<String> objects) {
-            super(context, textViewResourceId, objects);
-            for (int i = 0; i < objects.size(); ++i) {
-                mIdMap.put(objects.get(i), i);
-            }
-        }
-
-        @Override
-        public long getItemId(int position) {
-            String item = getItem(position);
-            return mIdMap.get(item);
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
     }
 }
