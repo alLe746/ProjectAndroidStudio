@@ -34,6 +34,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONArrayRequestListener;
+import com.example.appledoux.BuildConfig;
 import com.example.appledoux.R;
 import com.example.appledoux.data.MaBaseSQLite;
 
@@ -222,7 +223,7 @@ public class LoginActivity extends AppCompatActivity {
     public void updateAPI()
     {
 
-        AndroidNetworking.get("https://60102f166c21e10017050128.mockapi.io/labbbank/accounts/")
+        AndroidNetworking.get(BuildConfig.Base_URL)
                 .build()
                 .getAsJSONArray(new JSONArrayRequestListener() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
